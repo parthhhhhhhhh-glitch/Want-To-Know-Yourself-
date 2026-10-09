@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's Your Choice Quiz</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts: Permanent Marker (Graffiti), Caveat, Playfair, Courier Prime, Special Elite -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+  <style>
+    .font-typewriter { font-family: 'Courier Prime', monospace; }
+    .font-handwriting { font-family: 'Caveat', cursive; }
+    .font-vintage { font-family: 'Playfair Display', serif; }
+    .font-stamp { font-family: 'Special Elite', cursive; }
+    .font-graffiti { font-family: 'Permanent Marker', cursive; }
+
+    /* Custom Scrapbook Background & Paper Textures */
+    body {
+      background-color: #f3efe6;
+      background-image: 
+        radial-gradient(#d6cbb5 0.8px, transparent 0.8px),
+        radial-gradient(#d6cbb5 0.8px, #f3efe6 0.8px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+      color: #2b2621;
+      font-family: 'Courier Prime', monospace;
+      overflow-x: hidden;
+    }
+
+    .paper-card {
+      background: #fdfbf7;
+      background-image: repeating-linear-gradient(#00000005 0px, #00000005 1px, transparent 1px, transparent 24px);
+      box-shadow: 4px 10px 25px rgba(0,0,0,0.12), -1px -1px 3px rgba(255,255,255,0.8);
+      position: relative;
+    }
+
+    .paper-edge {
+      clip-path: polygon(
+        0% 0%, 100% 0%, 
+        99.5% 15%, 100% 30%, 98.8% 45%, 100% 60%, 99% 75%, 100% 90%, 98.5% 100%,
+        0% 100%, 0.8% 85%, 0% 70%, 1.2% 55%, 0% 40%, 1% 25%, 0% 10%
+      );
+    }
+
+    /* Tape & Sticky Notes */
+    .tape-top {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-1.5deg);
+      width: 110px;
+      height: 28px;
+      background-color: rgba(238, 230, 203, 0.88);
+      border-left: 2px dashed rgba(190, 175, 140, 0.5);
+      border-right: 2px dashed rgba(190, 175, 140, 0.5);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      backdrop-filter: blur(1px);
+      z-index: 20;
+    }
+
+    .sticky-note {
+      background: #fef08a;
+      box-shadow: 3px 4px 10px rgba(0,0,0,0.12);
+      border-bottom-right-radius: 12px;
+    }
+
+    /* Polaroid Card Effects */
+    .polaroid-card {
+      background: #ffffff;
+      padding: 8px 8px 14px 8px;
+      border: 1px solid #e5decf;
+      box-shadow: 3px 6px 12px rgba(0,0,0,0.08);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .polaroid-card:hover {
+      transform: translateY(-5px) scale(1.03) rotate(0deg) !important;
+      box-shadow: 8px 16px 24px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+
+    /* Graffiti YES Button Effects */
+    .graffiti-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+      color: #ffffff;
+      font-family: 'Permanent Marker', cursive;
+      text-shadow: 2px 3px 0px #064e3b, -1px -1px 0 #34d399;
+      box-shadow: 
+        0 0 15px rgba(16, 185, 129, 0.5),
+        5px 6px 0px #064e3b;
+      position: relative;
+      border: 3px solid #064e3b;
+      transform: rotate(-2deg);
+      transition: all 0.15s ease;
+    }
+
+    .graffiti-btn::before {
+      content: '★ YES! ★';
+      position: absolute;
+      top: -12px;
+      right: -10px;
+      font-size: 0.75rem;
+      background: #facc15;
+      color: #000;
+      padding: 1px 6px;
+      transform: rotate(12deg);
+      border: 1.5px solid #000;
+      font-family: 'Special Elite', cursive;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .graffiti-btn:hover {
+      transform: rotate(1deg) scale(1.08);
+      box-shadow: 
+        0 0 25px rgba(16, 185, 129, 0.8),
+        7px 8px 0px #064e3b;
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    }
+
+    .graffiti-btn:active {
+      transform: translate(3px, 3px) scale(0.98);
+      box-shadow: 2px 2px 0px #064e3b;
+    }
+
+    /* Particle Burst Styling */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      animation: popAndFade 0.6s ease-out forwards;
+    }
+
+    @keyframes popAndFade {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--dr));
+      }
+    }
+
+    /* Fade Animations */
+    .fade-enter {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 select-none">
+
+  <main class="w-full max-w-2xl paper-card paper-edge my-auto p-4 sm:p-8 border border-amber-900/10 min-h-[580px] flex flex-col justify-between relative">
+    
+    <div class="tape-top"></div>
+
+    <!-- Header Banner -->
+    <header class="w-full flex justify-between items-center border-b-2 border-dashed border-amber-900/20 pb-2 mb-3">
+      <div class="flex items-center gap-2">
+        <span class="bg-amber-900 text-amber-50 font-stamp text-[10px] sm:text-xs px-2 py-0.5 rounded rotate-[-2deg]">
+          MEMORIES #2026
+        </span>
+      </div>
+      <div id="step-indicator" class="font-stamp text-xs text-amber-900/60 hidden">
+        PAGE <span id="current-page-num">1</span> OF 4
+      </div>
+    </header>
+
+    <!-- CONTENT SLIDES CONTAINER -->
+    <div id="content-container" class="flex-1 flex flex-col items-center justify-center relative w-full my-auto">
+      <!-- Pages rendered dynamically via JS -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-3 pt-2 border-t-2 border-dashed border-amber-900/20 flex justify-between items-center text-xs font-typewriter text-amber-900/60">
+      <div class="flex items-center gap-1.5">
+        <i class="fa-solid fa-scissors text-amber-800"></i>
+        <span>Scrapbook Album</span>
+      </div>
+      <div class="font-handwriting text-lg text-amber-900">
+        Made with Love ❤️
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // Particle Burst Effect on Click
+    function triggerParticleBurst(e) {
+      const clickX = e.clientX || window.innerWidth / 2;
+      const clickY = e.clientY || window.innerHeight / 2;
+      const icons = ['✨', '💖', '⭐', '🌸', '⚡', '🎉', '❤️'];
+
+      for (let i = 0; i < 12; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.innerText = icons[Math.floor(Math.random() * icons.length)];
+        particle.style.fontSize = `${Math.floor(Math.random() * 12 + 16)}px`;
+        particle.style.left = `${clickX}px`;
+        particle.style.top = `${clickY}px`;
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 80 + 40;
+        const dx = `${Math.cos(angle) * dist}px`;
+        const dy = `${Math.sin(angle) * dist}px`;
+        const dr = `${(Math.random() - 0.5) * 360}deg`;
+
+        particle.style.setProperty('--dx', dx);
+        particle.style.setProperty('--dy', dy);
+        particle.style.setProperty('--dr', dr);
+
+        document.body.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 600);
+      }
+    }
+
+    // Sound Effect Generator
+    const playClickSound = () => {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.07);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.07);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.07);
+      } catch (err) {}
+    };
+
+    // Frog SVG Graphic
+    const getFrogSVG = () => `
+      <svg class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-md hover:rotate-6 transition-transform duration-300" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 120 C30 80, 70 40, 100 40 C130 40, 170 80, 160 120 C165 150, 140 180, 100 180 C60 180, 35 150, 40 120 Z" fill="#4a7c59" stroke="#2d4a35" stroke-width="4" stroke-dasharray="6 3"/>
+        <circle cx="65" cy="50" r="28" fill="#4a7c59" stroke="#2d4a35" stroke-width="4"/>
+        <circle cx="135" cy="50" r="28" fill="#4a7c59" stroke="#2d4a35" stroke-width="4"/>
+        <circle cx="65" cy="50" r="18" fill="#fffdf7" stroke="#333" stroke-width="2"/>
+        <circle cx="135" cy="50" r="18" fill="#fffdf7" stroke="#333" stroke-width="2"/>
+        <circle cx="68" cy="52" r="9" fill="#1a1a1a"/>
+        <circle cx="132" cy="52" r="9" fill="#1a1a1a"/>
+        <circle cx="70" cy="48" r="3" fill="#ffffff"/>
+        <circle cx="134" cy="48" r="3" fill="#ffffff"/>
+        <path d="M70 110 C70 90, 130 90, 130 110 C130 150, 70 150, 70 110 Z" fill="#e8e2ce" stroke="#8b7355" stroke-width="2" stroke-dasharray="3 2"/>
+        <ellipse cx="50" cy="110" rx="10" ry="6" fill="#e76f51" opacity="0.7"/>
+        <ellipse cx="150" cy="110" rx="10" ry="6" fill="#e76f51" opacity="0.7"/>
+        <path d="M75 125 Q100 145 125 125" fill="none" stroke="#1b2e21" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    `;
+
+    // State
+    const state = {
+      currentPage: 1, // 1 to 8
+      noClickCount: 0
+    };
+
+    const container = document.getElementById('content-container');
+    const stepIndicator = document.getElementById('step-indicator');
+    const currentPageNum = document.getElementById('current-page-num');
+
+    function renderPage() {
+      playClickSound();
+      container.className = "flex-1 flex flex-col items-center justify-center relative w-full my-auto fade-enter";
+
+      // Update Step Indicator
+      if (state.currentPage >= 2 && state.currentPage <= 5) {
+        stepIndicator.classList.remove('hidden');
+        currentPageNum.innerText = state.currentPage - 1;
+      } else {
+        stepIndicator.classList.add('hidden');
+      }
+
+      switch(state.currentPage) {
+        case 1: renderPage1(); break;
+        case 2: renderPage2(); break;
+        case 3: renderPage3(); break;
+        case 4: renderPage4(); break;
+        case 5: renderPage5(); break;
+        case 6: renderPage6(); break;
+        case 7: renderPage7(); break;
+        case 8: renderPage8(); break;
+      }
+    }
+
+    // PAGE 1: INTRO
+    function renderPage1() {
+      container.innerHTML = `
+        <div class="flex flex-col items-center text-center space-y-6 my-auto">
+          <div class="relative">
+            ${getFrogSVG()}
+            <span class="absolute -bottom-2 -right-4 font-handwriting text-2xl text-amber-900 bg-amber-100/90 px-3 py-0.5 rounded shadow -rotate-6 border border-amber-300">
+              Ribbit! Welcome 🐸
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <span class="bg-amber-900 text-amber-100 font-stamp text-xs uppercase px-3 py-1 tracking-widest rounded">
+              A Little Scrapbook Quiz
+            </span>
+            <h1 class="font-vintage text-3xl sm:text-5xl font-extrabold text-amber-950 tracking-tight leading-tight">
+              What's Your<br><span class="text-teal-800 italic font-serif">Choice</span> QUIZ
+            </h1>
+          </div>
+
+          <button onclick="handleOptionSelect(event)" class="group px-8 py-3 bg-teal-800 text-amber-50 font-vintage font-bold text-lg rounded shadow-lg hover:bg-teal-700 active:scale-95 transition-all cursor-pointer border border-teal-900 flex items-center gap-2">
+            <span>START QUIZ</span>
+            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    // PAGE 2: FAVOURITE FOOD
+    function renderPage2() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center">
+          <div class="text-center mb-4">
+            <span class="font-handwriting text-2xl text-teal-800 font-bold block mb-0.5">Question 1</span>
+            <h2 class="font-vintage text-2xl sm:text-3xl font-extrabold text-amber-950 uppercase tracking-wide">
+              WHAT'S YOUR FAVOURITE FOOD?
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-md my-2">
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-3deg]">
+              <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=500&q=80" alt="Pasta" class="w-full h-32 sm:h-36 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-lg text-stone-900">PASTA</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[3deg]">
+              <img src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=500&q=80" alt="Momo" class="w-full h-32 sm:h-36 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-lg text-stone-900">MOMO</h3>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // PAGE 3: FAVOURITE COLOUR
+    function renderPage3() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center relative">
+          <div class="sticky-note absolute -top-8 right-0 sm:-right-2 px-3 py-1.5 font-handwriting text-lg text-amber-950 rotate-[6deg] border border-yellow-300 z-10">
+            surprise waiting ✨
+          </div>
+
+          <div class="text-center mb-4">
+            <span class="font-handwriting text-2xl text-teal-800 font-bold block mb-0.5">Question 2</span>
+            <h2 class="font-vintage text-2xl sm:text-3xl font-extrabold text-amber-950 uppercase tracking-wide">
+              WHAT'S YOUR FAVOURITE COLOUR?
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg my-2">
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-2deg]">
+              <img src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80" alt="Green" class="w-full h-24 sm:h-28 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-stamp font-bold text-center text-xs sm:text-sm text-emerald-800">GREEN</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[2deg]">
+              <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=400&q=80" alt="Black" class="w-full h-24 sm:h-28 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-stamp font-bold text-center text-xs sm:text-sm text-stone-900">BLACK</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-1deg]">
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80" alt="Gold" class="w-full h-24 sm:h-28 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-stamp font-bold text-center text-xs sm:text-sm text-amber-700">GOLD</h3>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // PAGE 4: DREAM VACATION
+    function renderPage4() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center relative">
+          <div class="sticky-note absolute -top-8 right-0 sm:-right-2 px-3 py-1.5 font-handwriting text-lg text-amber-950 rotate-[-5deg] border border-yellow-300 z-10">
+            almost there! 💫
+          </div>
+
+          <div class="text-center mb-3">
+            <span class="font-handwriting text-2xl text-teal-800 font-bold block mb-0.5">Question 3</span>
+            <h2 class="font-vintage text-2xl sm:text-3xl font-extrabold text-amber-950 uppercase tracking-wide">
+              WHAT IS YOUR DREAM VACATION?
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 w-full max-w-xl my-1">
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-1deg]">
+              <img src="https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=400&q=80" alt="Edinburgh" class="w-full h-24 object-cover rounded-sm mb-1.5 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-xs sm:text-sm text-stone-900">EDINBURGH</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[2deg]">
+              <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=400&q=80" alt="Japan" class="w-full h-24 object-cover rounded-sm mb-1.5 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-xs sm:text-sm text-stone-900">JAPAN</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[1deg]">
+              <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=400&q=80" alt="New York" class="w-full h-24 object-cover rounded-sm mb-1.5 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-xs sm:text-sm text-stone-900">NEW YORK</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-2deg] border-amber-800/40 bg-amber-50/50">
+              <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=400&q=80" alt="Building" class="w-full h-24 object-cover rounded-sm mb-1.5 border border-amber-200">
+              <h3 class="font-vintage font-bold text-center text-[10px] sm:text-xs text-stone-900 leading-tight">JANVI KE GHAR KI SIDE WALI BUILDING</h3>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // PAGE 5: FAVOURITE DESSERT
+    function renderPage5() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center">
+          <div class="text-center mb-4">
+            <span class="font-handwriting text-2xl text-teal-800 font-bold block mb-0.5">Question 4</span>
+            <h2 class="font-vintage text-2xl sm:text-3xl font-extrabold text-amber-950 uppercase tracking-wide">
+              WHAT'S YOUR FAVOURITE DESSERT?
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-md my-2">
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[2deg]">
+              <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=400&q=80" alt="Choco Lava Cake" class="w-full h-32 sm:h-36 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-sm sm:text-base text-stone-900">CHOCO LAVA CAKE</h3>
+            </div>
+
+            <div onclick="handleOptionSelect(event)" class="polaroid-card cursor-pointer rotate-[-2deg]">
+              <img src="https://images.unsplash.com/photo-1562376552-0d160a2f238d?auto=format&fit=crop&w=400&q=80" alt="Waffle Ice Cream" class="w-full h-32 sm:h-36 object-cover rounded-sm mb-2 border border-stone-200">
+              <h3 class="font-vintage font-bold text-center text-sm sm:text-base text-stone-900">WAFFLE ICE CREAM</h3>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // PAGE 6: SURPRISE NOTE
+    function renderPage6() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center my-auto">
+          <div class="text-center mb-2">
+            <span class="bg-red-800 text-red-50 font-stamp text-xs px-3 py-1 uppercase rounded tracking-widest">
+              Special Secret
+            </span>
+            <h2 class="font-vintage text-3xl sm:text-4xl font-extrabold text-amber-950 mt-1">
+              SURPRISE ❤️
+            </h2>
+          </div>
+
+          <div class="w-full max-w-lg bg-amber-50/95 border-2 border-dashed border-amber-800/30 p-4 sm:p-5 rounded-lg shadow-md relative my-2">
+            <div class="font-typewriter text-xs sm:text-sm text-stone-800 leading-relaxed max-h-[230px] overflow-y-auto pr-2 space-y-3">
+              <p>
+                I like you, i have had a crush on you for 3 years starting from the 1st day when you asked me about my bag to teachers day performance, then Aakash and 9 and 10 we were in the same class i remember when u first spoke to me for a dance performance each and every word of it .
+              </p>
+              <p>
+                All those moments, all those things made me fell even more for you . I will be honest i didnt know u in 8th so it was just a crush  but Aakash and 9 and 10 us being in the same class got me to know you more i still dontt know u much but I'm damn sure you are the one for me. I like you  very much ,can we give ourselves a try i promise to never ever give u any chance to regret ur decision and be the best partner for you.
+              </p>
+            </div>
+          </div>
+
+          <button onclick="handleOptionSelect(event)" class="mt-3 px-8 py-2.5 bg-amber-900 text-amber-50 font-vintage font-bold text-base rounded shadow hover:bg-amber-800 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+            <span>CONTINUE</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    // PAGE 7: WILL YOU DATE ME? (Graffiti YES Button)
+    function renderPage7() {
+      state.noClickCount = 0;
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center my-auto relative min-h-[300px] justify-center">
+          <div class="text-center mb-8">
+            <span class="font-handwriting text-3xl text-amber-800 block mb-1">The Big Question</span>
+            <h2 class="font-vintage text-3xl sm:text-5xl font-black text-amber-950 tracking-tight">
+              WILL YOU DATE ME?
+            </h2>
+          </div>
+
+          <div class="flex items-center justify-center gap-6 w-full relative h-24">
+            <!-- Graffiti Styled YES Button -->
+            <button onclick="handleYesClick(event)" class="graffiti-btn px-10 py-4 text-2xl sm:text-3xl rounded-xl cursor-pointer">
+              YES! 💥
+            </button>
+
+            <!-- Dodging NO Button -->
+            <button id="no-button" onclick="handleNoClick(event)" onmouseover="handleNoClick(event)" class="px-7 py-3 bg-rose-700 text-white font-vintage font-bold text-lg rounded shadow-lg hover:bg-rose-600 transition-all z-10 border border-rose-900 relative">
+              NO 😢
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleYesClick(e) {
+      triggerParticleBurst(e);
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+      setTimeout(() => {
+        nextPage();
+      }, 350);
+    }
+
+    function handleNoClick(e) {
+      triggerParticleBurst(e);
+      state.noClickCount++;
+      const btn = document.getElementById('no-button');
+
+      if (state.noClickCount >= 3) {
+        if (btn) btn.style.display = 'none';
+      } else {
+        const x = (Math.random() - 0.5) * 200;
+        const y = (Math.random() - 0.5) * 120;
+        if (btn) btn.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    }
+
+    // PAGE 8: FINAL INSTAGRAM THANK YOU PAGE
+    function renderPage8() {
+      container.innerHTML = `
+        <div class="w-full flex flex-col items-center text-center my-auto space-y-5">
+          <div class="relative">
+            ${getFrogSVG()}
+            <span class="absolute -bottom-2 -right-4 font-handwriting text-2xl text-red-800 bg-red-100 px-3 py-0.5 rounded shadow rotate-[-4deg] border border-red-300">
+              Yay!! ❤️
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <h2 class="font-vintage text-3xl sm:text-4xl font-extrabold text-amber-950 uppercase tracking-wide">
+              THANKS FOR CHOOSING!
+            </h2>
+            <div class="w-16 h-1 bg-amber-800/30 mx-auto rounded"></div>
+          </div>
+
+          <div class="bg-amber-50/90 border-2 border-dashed border-amber-800/30 p-5 rounded-lg max-w-md shadow-sm">
+            <p class="font-typewriter text-sm text-stone-800 leading-relaxed font-bold">
+              Please message me on my Instagram as soon as possible! ✨
+            </p>
+          </div>
+
+          <button onclick="restartQuiz(event)" class="mt-2 px-6 py-2 border border-amber-900/40 text-amber-900 font-typewriter text-xs rounded hover:bg-amber-100/50 transition-all flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Restart Album</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function handleOptionSelect(e) {
+      triggerParticleBurst(e);
+      setTimeout(() => {
+        nextPage();
+      }, 250);
+    }
+
+    function nextPage() {
+      state.currentPage++;
+      renderPage();
+    }
+
+    function restartQuiz(e) {
+      triggerParticleBurst(e);
+      state.currentPage = 1;
+      state.noClickCount = 0;
+      renderPage();
+    }
+
+    window.onload = () => {
+      renderPage();
+    };
+  </script>
+</body>
+</html>
